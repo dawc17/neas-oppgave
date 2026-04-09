@@ -1,3 +1,4 @@
+const { require: req } = global || {}
 const sql = require('mssql')
 const fs = require('fs')
 const path = require('path')
@@ -12,8 +13,8 @@ async function migrate() {
     user: process.env.SQL_USER || 'sa',
     password: process.env.SQL_PASSWORD || 'changeme',
     options: {
-      encrypt: process.env.SQL_ENCRYPT !== 'false',
-      trustServerCertificate: process.env.SQL_TRUST_CERT === 'true',
+      encrypt: true,
+      trustServerCertificate: true,
     },
   }
 
@@ -24,10 +25,9 @@ async function migrate() {
   await masterPool
     .request()
     .query(`IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '${dbName}') CREATE DATABASE [${dbName}]`)
-
   await masterPool.close()
 
-  console.log('Running migrations...')
+  console.log('Running migration script...')
   const dbPool = await sql.connect({ ...config, database: dbName })
   const script = fs.readFileSync(path.join(__dirname, 'migrations', '001_initial.sql'), 'utf8')
 
@@ -37,7 +37,7 @@ async function migrate() {
     process.stdout.write('.')
   }
 
-  console.log('\nMigration complete.')
+  console.log('\nDone.')
   await dbPool.close()
 }
 

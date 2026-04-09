@@ -1,15 +1,15 @@
-const sql = require('mssql')
+const sql = require("mssql")
 
 const config = {
-  server: process.env.SQL_SERVER || 'localhost',
-  port: parseInt(process.env.SQL_PORT || '1433'),
-  database: process.env.SQL_DATABASE || 'inventory',
-  user: process.env.SQL_USER || 'sa',
+  server: process.env.SQL_SERVER,
+  port: parseInt(process.env.SQL_PORT),
+  database: process.env.SQL_DATABASE,
+  user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
   options: {
-    encrypt: process.env.SQL_ENCRYPT !== 'false',
-    trustServerCertificate: process.env.SQL_TRUST_CERT === 'true',
-  },
+    encrypt: true,
+    trustServerCertificate: false
+  }
 }
 
 let pool = null
@@ -22,3 +22,4 @@ async function getPool() {
 }
 
 module.exports = { getPool, sql }
+
