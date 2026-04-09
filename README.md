@@ -1,44 +1,54 @@
-# neas-oppgave
+# Inventory Management System
 
-This template should help get you started developing with Vue 3 in Vite.
+## Running locally
 
-## Recommended IDE Setup
+**Prerequisites:** Docker Desktop
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+1. Start the containers:
+   ```bash
+   docker-compose up --build
+   ```
 
-## Recommended Browser Setup
+2. Run the database migration (first time only):
+   ```bash
+   docker-compose exec api node db/migrate.js
+   ```
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+3. Start the frontend:
+   ```bash
+   bun dev
+   ```
 
-## Customize configuration
+API is available at `http://localhost:7071/api`  
+Frontend is available at `http://localhost:5173`
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+---
 
-## Project Setup
+## Deploying to Azure
 
-```sh
-bun install
-```
+**Prerequisites:** [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) and [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
-### Compile and Hot-Reload for Development
+1. Log in to Azure:
+   ```bash
+   az login
+   ```
 
-```sh
-bun dev
-```
+2. Deploy the API:
+   ```bash
+   cd api
+   func azure functionapp publish testneas --javascript --build remote
+   ```
 
-### Compile and Minify for Production
+---
 
-```sh
-bun run build
-```
+## Environment variables
 
-### Lint with [ESLint](https://eslint.org/)
+For local development, set these in `docker-compose.yml`. For Azure, set them in the Function App's Environment Variables in the Azure portal.
 
-```sh
-bun lint
-```
+| Variable | Description |
+|----------|-------------|
+| `SQL_SERVER` | SQL Server hostname |
+| `SQL_PORT` | SQL Server port (default: 1433) |
+| `SQL_DATABASE` | Database name |
+| `SQL_USER` | SQL login username |
+| `SQL_PASSWORD` | SQL login password |
