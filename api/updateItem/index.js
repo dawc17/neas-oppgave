@@ -1,8 +1,14 @@
 const { getPool, sql } = require("../db/connection")
+const { verifyToken, requireRole } = require("../auth/middleware")
 
 module.exports = async function (context, req) {
   const { name, sku, quantity, price } = req.body
   try {
+    const decoded = verifyToken(req)
+    if (decoded.status) return decoded
+    const err = requireRole(decoded, "admin")
+    if (err) return err
+
     const pool = await getPool()
     const result = await pool
       .request()

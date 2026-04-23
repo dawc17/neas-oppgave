@@ -22,6 +22,21 @@ services:
       - "10001:10001"
       - "10002:10002"
 
+  db-migrate:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: node db/migrate.js
+    environment:
+      SQL_SERVER: sqlserver
+      SQL_PORT: "1433"
+      SQL_DATABASE: inventory
+      SQL_USER: sa
+      SQL_PASSWORD: ${SA_PASSWORD}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
   api:
     build:
       context: ./api
@@ -40,8 +55,8 @@ services:
     ports:
       - "7071:80"
     depends_on:
-      sqlserver:
-        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
       azurite:
         condition: service_started
 
