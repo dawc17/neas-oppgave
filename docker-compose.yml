@@ -34,6 +34,7 @@ services:
       SQL_DATABASE: inventory
       SQL_USER: sa
       SQL_PASSWORD: ${SA_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
       SQL_ENCRYPT: "false"
       SQL_TRUST_CERT: "true"
     ports:
