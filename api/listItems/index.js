@@ -1,6 +1,6 @@
 const { getPool } = require("../db/connection")
 
-module.exports = async function (context, req) {
+module.exports = async function (context) {
   try {
     const pool = await getPool()
     const result = await pool

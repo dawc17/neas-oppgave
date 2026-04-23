@@ -8,7 +8,7 @@ const config = {
   password: process.env.SQL_PASSWORD,
   options: {
     encrypt: true,
-    trustServerCertificate: false
+    trustServerCertificate: true
   }
 }
 

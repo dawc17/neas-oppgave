@@ -1,4 +1,4 @@
-const { getPool, sql } = require("../db/connection").default
+const { getPool, sql } = require("../db/connection")
 
 module.exports = async function (context, req) {
   try {
