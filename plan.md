@@ -18,6 +18,9 @@
 | `api/db/migrate.js` + `api/db/migrations/001_initial.sql` — DB setup script | ✅     |
 | `api/listItems` — `GET /api/items`                                          | ✅     |
 | `api/getItem` — `GET /api/items/{id}`                                       | ✅     |
+| `api/createItem` — `POST /api/items`                                        | ✅     |
+| `api/updateItem` — `PUT /api/items/{id}`                                    | ✅     |
+| `api/deleteItem` — `DELETE /api/items/{id}`                                 | ✅     |
 | `docker-compose.yml` — SQL Server + Azurite + Functions                     | ✅     |
 | Azure SQL database created and migrated                                     | ✅     |
 | Function App deployed to Azure                                              | ✅     |
@@ -26,7 +29,7 @@
 
 ---
 
-## Database schema (already in Azure SQL)
+## Database schema
 
 ```sql
 CREATE TABLE items (
@@ -38,93 +41,136 @@ CREATE TABLE items (
   created_at  DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
   updated_at  DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET()
 )
+
+CREATE TABLE users (
+  id           INT IDENTITY(1,1) PRIMARY KEY,
+  username     NVARCHAR(100) NOT NULL UNIQUE,
+  email        NVARCHAR(200) NOT NULL UNIQUE,
+  name         NVARCHAR(200) NOT NULL,
+  password     NVARCHAR(255) NOT NULL,  -- bcrypt hash, never plain text
+  role         NVARCHAR(20) NOT NULL DEFAULT 'guest',  -- 'admin', 'employee', 'guest'
+  created_at   DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET()
+)
 ```
 
 ---
 
-## MVP API — remaining functions to write
+## API
 
-Each function = a new folder under `api/` with `function.json` + `index.js`.
+### Items
 
-| Function folder | Method | Route             | Status  |
-| --------------- | ------ | ----------------- | ------- |
-| `listItems`     | GET    | `/api/items`      | ✅ done |
-| `getItem`       | GET    | `/api/items/{id}` | ✅ done |
-| `createItem`    | POST   | `/api/items`      | ✅ done |
-| `updateItem`    | PUT    | `/api/items/{id}` | ⬜      |
-| `deleteItem`    | DELETE | `/api/items/{id}` | ✅ done |
+| Function      | Method | Route             | Allowed roles          |
+| ------------- | ------ | ----------------- | ---------------------- |
+| `listItems`   | GET    | `/api/items`      | admin, employee, guest |
+| `getItem`     | GET    | `/api/items/{id}` | admin, employee, guest |
+| `createItem`  | POST   | `/api/items`      | admin, employee        |
+| `updateItem`  | PUT    | `/api/items/{id}` | admin                  |
+| `deleteItem`  | DELETE | `/api/items/{id}` | admin                  |
 
-### createItem
+### Auth
 
-- Read `name`, `sku`, `quantity`, `price` from `req.body`
-- `INSERT INTO items ... OUTPUT INSERTED.*`
-- Return 201 with the new row
+| Function   | Method | Route                | Notes                          |
+| ---------- | ------ | -------------------- | ------------------------------ |
+| `register` | POST   | `/api/auth/register` | Hashes password, returns JWT   |
+| `login`    | POST   | `/api/auth/login`    | Verifies password, returns JWT |
 
-### updateItem
+---
 
-- Read `id` from `req.params.id`
-- Read fields from `req.body`
-- `UPDATE items SET ... OUTPUT INSERTED.* WHERE id = @id`
-- Return 200 with updated row, or 404 if no rows affected
+## Auth design
 
-### deleteItem
+### JWT
+- Signed with `JWT_SECRET` env var
+- Payload: `{ id, username, role }`
+- Expires after **1 hour**
 
-- Read `id` from `req.params.id`
-- `DELETE FROM items WHERE id = @id`
-- Return 204 (no body), or 404 if no rows affected
+### Roles
+| Role       | Can do                           |
+| ---------- | -------------------------------- |
+| `admin`    | Everything (full CRUD)           |
+| `employee` | View items + create items        |
+| `guest`    | View items only                  |
+
+### Shared helper — `api/auth/middleware.js`
+Not a function folder — just a module imported by other functions:
+- `verifyToken(req)` — reads `Authorization: Bearer <token>`, verifies JWT, returns decoded payload or throws 401
+- `requireRole(decoded, ...roles)` — checks `decoded.role` against allowed list, throws 403 if not allowed
+
+### Register flow
+1. Read `username`, `email`, `name`, `password` from `req.body`
+2. Hash password with `bcrypt.hash(password, 10)`
+3. INSERT into users table
+4. Sign JWT, return 201 with token
+
+### Login flow
+1. Read `username`, `password` from `req.body`
+2. Fetch user by username
+3. `bcrypt.compare(password, user.password)` — if false → 401
+4. Sign JWT, return 200 with token
+
+### Protecting existing endpoints
+Add at the top of each function's try block:
+```js
+const { verifyToken, requireRole } = require("../auth/middleware")
+const decoded = verifyToken(req)           // returns 401 if missing/invalid
+requireRole(decoded, "admin", "employee")  // returns 403 if wrong role
+```
+
+### New packages needed
+```bash
+cd api && npm install jsonwebtoken bcrypt
+```
+Add `JWT_SECRET` to `.env` (local) and Azure App Settings (production).
 
 ---
 
 ## MVP Frontend
 
-Minimal — just enough to show the data and add items.
-
 ```
 src/
-├── api/client.js          NEW — axios instance (baseURL '/api')
-├── router/index.js        NEW — two routes: / and /inventory
-├── stores/inventory.js    NEW — pinia store, calls the API
+├── api/client.js          NEW — axios instance, attaches JWT from localStorage
+├── router/index.js        NEW — routes: /, /inventory, /login
+├── stores/
+│   ├── auth.js            NEW — login/register actions, stores token
+│   └── inventory.js       NEW — fetchItems, createItem, updateItem, deleteItem
 ├── pages/
-│   └── InventoryPage.vue  NEW — table of items + add form
+│   ├── LoginPage.vue      NEW — login form
+│   └── InventoryPage.vue  NEW — table + add/edit/delete
 ├── components/
-│   ├── ItemTable.vue      NEW — renders the rows
-│   └── ItemForm.vue       NEW — create/edit form (modal or inline)
-├── App.vue                MODIFY — add <RouterView>
+│   ├── ItemTable.vue      NEW
+│   └── ItemForm.vue       NEW — create/edit modal
+├── App.vue                MODIFY — RouterView
 └── main.js                MODIFY — register router + pinia
 ```
 
 Install: `bun add vue-router@4 pinia axios`
 
-### InventoryPage features (MVP only)
-
-- Table: name, SKU, quantity, price
-- "Add item" button → opens ItemForm
-- Click a row → opens ItemForm pre-filled for editing
-- Delete button per row
-
 ---
 
 ## Implementation order
 
-### Step 1 — remaining API functions (you write, guided)
+### Step 1 — Auth backend
+1. New migration `api/db/migrations/002_users.sql`, run it with `node api/db/migrate.js`
+2. `cd api && npm install jsonwebtoken bcrypt`
+3. Write `api/auth/middleware.js`
+4. Write `api/register/` (function.json + index.js)
+5. Write `api/login/` (function.json + index.js)
+6. Test register + login in Postman, verify JWT returned
+7. Add `verifyToken` + `requireRole` to existing item functions
+8. Test role enforcement in Postman
 
-1. `createItem` — `function.json` then `index.js`
-2. `updateItem`
-3. `deleteItem`
-4. Test all five endpoints in Postman
+### Step 2 — Frontend
+9. `bun add vue-router@4 pinia axios`
+10. `src/api/client.js` — axios with JWT header
+11. `src/router/index.js` — routes + redirect unauthenticated to /login
+12. `src/stores/auth.js` + `src/stores/inventory.js`
+13. `LoginPage.vue` — login form, saves token, redirects to /inventory
+14. `ItemTable.vue` + `ItemForm.vue` + `InventoryPage.vue`
+15. Hide add/edit/delete buttons based on role from auth store
 
-### Step 2 — frontend wiring
-
-5. `bun add vue-router@4 pinia axios`
-6. `src/api/client.js` + `src/router/index.js`
-7. Update `main.js` and `App.vue`
-8. `src/stores/inventory.js` — `fetchItems`, `createItem`, `updateItem`, `deleteItem`
-9. `ItemTable.vue` + `ItemForm.vue` + `InventoryPage.vue`
-
-### Step 3 — deploy
-
-10. `func azure functionapp publish testneas --javascript --build remote`
-11. Verify on the live Azure URL
+### Step 3 — Deploy
+16. Add `JWT_SECRET` to Azure App Settings
+17. `func azure functionapp publish testneas --javascript --build remote`
+18. Verify on live Azure URL
 
 ---
 
@@ -134,15 +180,15 @@ Install: `bun add vue-router@4 pinia axios`
 # Start everything (SQL Server + Azurite + Functions)
 docker-compose up
 
-# Run migration (first time or after schema changes)
+# Run a migration
 node api/db/migrate.js
 
 # Start frontend
 bun dev
 
-# Re-deploy functions after changes
+# Deploy functions
 func azure functionapp publish testneas --javascript --build remote
 ```
 
-Functions run at `http://localhost:7071/api/...`
-Vite dev server at `http://localhost:5173` (proxies `/api` → Functions)
+Functions: `http://localhost:7071/api/...`
+Frontend: `http://localhost:5173` (proxies `/api` → Functions)

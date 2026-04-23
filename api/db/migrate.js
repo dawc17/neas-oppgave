@@ -1,4 +1,4 @@
-const { require: req } = global || {}
+require('dotenv').config({ path: require('path').join(__dirname, '../../.env') })
 const sql = require('mssql')
 const fs = require('fs')
 const path = require('path')
@@ -27,17 +27,23 @@ async function migrate() {
     .query(`IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '${dbName}') CREATE DATABASE [${dbName}]`)
   await masterPool.close()
 
-  console.log('Running migration script...')
   const dbPool = await sql.connect({ ...config, database: dbName })
-  const script = fs.readFileSync(path.join(__dirname, 'migrations', '001_initial.sql'), 'utf8')
 
-  const batches = script.split(/^\s*GO\s*$/im).filter((b) => b.trim())
-  for (const batch of batches) {
-    await dbPool.request().query(batch)
-    process.stdout.write('.')
+  const migrationsDir = path.join(__dirname, 'migrations')
+  const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort()
+
+  for (const file of files) {
+    console.log(`Running ${file}...`)
+    const script = fs.readFileSync(path.join(migrationsDir, file), 'utf8')
+    const batches = script.split(/^\s*GO\s*$/im).filter((b) => b.trim())
+    for (const batch of batches) {
+      await dbPool.request().query(batch)
+      process.stdout.write('.')
+    }
+    console.log()
   }
 
-  console.log('\nDone.')
+  console.log('Done.')
   await dbPool.close()
 }
 

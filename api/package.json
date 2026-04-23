@@ -5,6 +5,9 @@
     "start": "func start"
   },
   "dependencies": {
-    "mssql": "^11.0.1"
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "jsonwebtoken": "^9.0.3",
+    "mssql": "^12.5.0"
   }
 }
