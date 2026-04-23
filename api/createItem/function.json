@@ -5,8 +5,8 @@
       "direction": "in",
       "name": "req",
       "authLevel": "anonymous",
-      "methods": ["get"],
-      "route": "items/{id}"
+      "methods": ["post"],
+      "route": "items"
     },
     { "type": "http", "direction": "out", "name": "$return" }
   ]
