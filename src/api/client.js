@@ -1,16 +1,34 @@
-import axios from "axios"
+import axios from 'axios'
 
 const client = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
 })
 
 client.interceptors.request.use((config) => {
-  // read token from localStorage, attach to config headers authorization
-  const token = localStorage.getItem("jwtToken")
+  const token = localStorage.getItem('jwtToken')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const { getActivePinia } = await import('pinia')
+      const pinia = getActivePinia()
+      const { useAuthStore } = await import('@/stores/auth')
+      if (pinia) {
+        useAuthStore(pinia).logout()
+      } else {
+        localStorage.removeItem('jwtToken')
+      }
+      const { default: router } = await import('@/router')
+      await router.replace({ name: 'Login' })
+    }
+    return Promise.reject(error)
+  },
+)
 
 export default client

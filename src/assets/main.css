@@ -1,1 +1,60 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "Mabry Pro";
+  src: url("/mabry-light-pro.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mabry Pro";
+  src: url("/mabry-regular-pro.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mabry Pro";
+  src: url("/mabry-regular-pro.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Mabry Pro", Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  --color-neas-pine: #003d2d;
+  --color-neas-moss: #95c672;
+  --color-neas-sun: #f1e967;
+  --color-neas-petal: #eebbca;
+  --color-neas-mist: #f1f6f4;
+  --color-neas-mid-grey: #cccccc;
+  --color-neas-light-grey: #efefef;
+  --color-neas-black: #000000;
+  --color-neas-white: #ffffff;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-neas-mist);
+    color: var(--color-neas-pine);
+  }
+
+  .dark body {
+    background-color: #061512;
+    color: #e8f0ec;
+  }
+}

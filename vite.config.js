@@ -3,26 +3,27 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    vue(),
-    vueDevTools(),
-  ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:7071',
-        changeOrigin: true,
+export default defineConfig(async ({ mode }) => {
+  const plugins = [tailwindcss(), vue()]
+  if (mode === 'development') {
+    const { default: vueDevTools } = await import('vite-plugin-vue-devtools')
+    plugins.push(vueDevTools())
+  }
+  return {
+    plugins,
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:7071',
+          changeOrigin: true,
+        },
       },
     },
-  },
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
-  },
+  }
 })
