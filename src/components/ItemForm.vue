@@ -52,7 +52,7 @@ async function handleSubmit() {
 
 <template>
   <div
-    class="border-b border-neas-mist bg-neas-white px-6 py-5 lg:px-8 dark:border-white/10 dark:bg-[#0f241d]"
+    class="border-b border-neas-mist bg-neas-white px-6 py-6 lg:px-8 dark:border-white/10 dark:bg-[#0f241d]"
   >
     <h3 class="text-xs font-medium uppercase tracking-[0.1em] text-neas-pine dark:text-[#e8f0ec]">
       Nytt produkt
@@ -69,7 +69,7 @@ async function handleSubmit() {
       {{ errorMsg }}
     </div>
 
-    <form class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" @submit.prevent="handleSubmit">
+    <form class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" @submit.prevent="handleSubmit">
       <div class="sm:col-span-2 lg:col-span-1">
         <label
           for="item-name"
@@ -82,7 +82,7 @@ async function handleSubmit() {
           v-model="name"
           type="text"
           autocomplete="off"
-          class="box-border w-full rounded-xl border border-neas-mid-grey bg-neas-light-grey/50 px-4 py-2.5 text-sm font-normal leading-none text-neas-pine outline-none transition-[border-color,box-shadow,background-color] focus:border-neas-pine focus:bg-neas-white focus:ring-2 focus:ring-neas-moss/35 dark:border-white/15 dark:bg-[#061512] dark:text-[#e8f0ec] dark:focus:border-neas-moss dark:focus:bg-[#0a1814] dark:focus:ring-neas-moss/25"
+          class="neas-input box-border w-full px-4 py-2.5 text-sm font-normal leading-none text-neas-pine"
         />
       </div>
       <div>
@@ -97,7 +97,7 @@ async function handleSubmit() {
           v-model="sku"
           type="text"
           autocomplete="off"
-          class="box-border w-full rounded-xl border border-neas-mid-grey bg-neas-light-grey/50 px-4 py-2.5 text-sm font-normal leading-none text-neas-pine outline-none transition-[border-color,box-shadow,background-color] focus:border-neas-pine focus:bg-neas-white focus:ring-2 focus:ring-neas-moss/35 dark:border-white/15 dark:bg-[#061512] dark:text-[#e8f0ec] dark:focus:border-neas-moss dark:focus:bg-[#0a1814] dark:focus:ring-neas-moss/25"
+          class="neas-input box-border w-full px-4 py-2.5 text-sm font-normal leading-none text-neas-pine"
         />
       </div>
       <div>
@@ -113,7 +113,7 @@ async function handleSubmit() {
           type="number"
           min="0"
           step="1"
-          class="box-border w-full rounded-xl border border-neas-mid-grey bg-neas-light-grey/50 px-4 py-2.5 text-sm font-normal leading-none text-neas-pine outline-none transition-[border-color,box-shadow,background-color] focus:border-neas-pine focus:bg-neas-white focus:ring-2 focus:ring-neas-moss/35 dark:border-white/15 dark:bg-[#061512] dark:text-[#e8f0ec] dark:focus:border-neas-moss dark:focus:bg-[#0a1814] dark:focus:ring-neas-moss/25"
+          class="neas-input box-border w-full px-4 py-2.5 text-sm font-normal leading-none text-neas-pine"
         />
       </div>
       <div>
@@ -129,14 +129,14 @@ async function handleSubmit() {
           type="text"
           inputmode="decimal"
           autocomplete="off"
-          class="box-border w-full rounded-xl border border-neas-mid-grey bg-neas-light-grey/50 px-4 py-2.5 text-sm font-normal leading-none text-neas-pine outline-none transition-[border-color,box-shadow,background-color] focus:border-neas-pine focus:bg-neas-white focus:ring-2 focus:ring-neas-moss/35 dark:border-white/15 dark:bg-[#061512] dark:text-[#e8f0ec] dark:focus:border-neas-moss dark:focus:bg-[#0a1814] dark:focus:ring-neas-moss/25"
+          class="neas-input box-border w-full px-4 py-2.5 text-sm font-normal leading-none text-neas-pine"
         />
       </div>
       <div class="flex items-end sm:col-span-2 lg:col-span-4">
         <button
           type="submit"
           :disabled="submitting"
-          class="rounded-xl bg-neas-pine px-6 py-2.5 text-xs font-medium uppercase tracking-[0.1em] text-neas-white transition-[background-color,opacity] hover:bg-[#002f24] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-[#004d3a]"
+          class="neas-button-dark rounded-[13px] px-6 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
         >
           {{ submitting ? 'Lagrer…' : 'Legg til produkt' }}
         </button>

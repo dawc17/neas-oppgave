@@ -9,7 +9,7 @@ const { isDark } = storeToRefs(theme)
 <template>
   <button
     type="button"
-    class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neas-moss border-neas-pine/20 bg-neas-white/90 text-neas-pine shadow-sm hover:border-neas-pine hover:bg-neas-white dark:border-white/25 dark:bg-[#0f241d]/90 dark:text-neas-mist dark:hover:border-neas-moss dark:hover:bg-[#143028]"
+    class="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-neas-pine/20 bg-neas-white/90 text-neas-pine shadow-[0_10px_25px_rgba(0,61,45,0.12)] transition-[background-color,border-color,color,box-shadow] hover:border-neas-pine hover:bg-neas-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neas-moss dark:border-white/25 dark:bg-[#0f241d]/90 dark:text-neas-mist dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)] dark:hover:border-neas-moss dark:hover:bg-[#143028]"
     :aria-pressed="isDark"
     :aria-label="isDark ? 'Bytt til lys modus' : 'Bytt til mørk modus'"
     @click="theme.toggle()"
@@ -26,7 +26,9 @@ const { isDark } = storeToRefs(theme)
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      <path
+        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+      />
     </svg>
     <svg
       v-else
