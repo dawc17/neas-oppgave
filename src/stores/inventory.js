@@ -8,7 +8,11 @@ export const useInventoryStore = defineStore("inventory", {
   actions: {
     async fetchItems() {
       const response = await client.get("/items")
-      this.items = response.data
+      this.items = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.items)
+          ? response.data.items
+          : []
     },
     async createItem(data) {
       await client.post("/items", data)

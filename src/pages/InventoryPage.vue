@@ -24,6 +24,7 @@ const saleSelections = ref({})
 const saleStage = ref('select')
 const receipt = ref(null)
 const saleError = ref('')
+const inventoryItems = computed(() => (Array.isArray(store.items) ? store.items : []))
 
 function handlePointerMove(event) {
   if (!pageEl.value) return
@@ -46,12 +47,15 @@ function handlePointerLeave() {
   pageEl.value.style.setProperty('--neas-grid-y', '0px')
 }
 
-const totalProducts = computed(() => store.items.length)
+const totalProducts = computed(() => inventoryItems.value.length)
 const totalUnits = computed(() =>
-  store.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+  inventoryItems.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
 )
 const totalValue = computed(() =>
-  store.items.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.price || 0), 0),
+  inventoryItems.value.reduce(
+    (sum, item) => sum + Number(item.quantity || 0) * Number(item.price || 0),
+    0,
+  ),
 )
 const currency = new Intl.NumberFormat('nb-NO', {
   style: 'currency',
@@ -78,7 +82,7 @@ function logout() {
 
 function openSale() {
   saleSelections.value = {}
-  store.items.forEach((it) => (saleSelections.value[it.id] = 0))
+  inventoryItems.value.forEach((it) => (saleSelections.value[it.id] = 0))
   saleStage.value = 'select'
   receipt.value = null
   saleError.value = ''
@@ -99,7 +103,7 @@ function generateReceipt() {
   saleError.value = ''
   const lines = []
   let total = 0
-  for (const it of store.items) {
+  for (const it of inventoryItems.value) {
     const q = Number(saleSelections.value[it.id] || 0)
     if (q > 0) {
       if (q > Number(it.quantity)) {
@@ -129,7 +133,7 @@ function generateReceipt() {
 async function confirmSale() {
   if (!receipt.value) return
   for (const line of receipt.value.lines) {
-    const item = store.items.find((i) => i.id === line.id)
+    const item = inventoryItems.value.find((i) => i.id === line.id)
     if (!item) continue
     const newQty = Number(item.quantity) - Number(line.qty)
     if (newQty <= 0) {
@@ -377,7 +381,7 @@ async function downloadReceiptPng() {
           </div>
 
           <ItemForm v-if="isAdmin" />
-          <ItemTable :items="store.items" :is-admin="isAdmin" />
+          <ItemTable :items="inventoryItems" :is-admin="isAdmin" />
         </section>
       </div>
     </main>
@@ -414,7 +418,7 @@ async function downloadReceiptPng() {
                 </thead>
                 <tbody>
                   <tr
-                    v-for="item in store.items"
+                    v-for="item in inventoryItems"
                     :key="item.id"
                     class="border-t border-neas-mist py-2"
                   >
