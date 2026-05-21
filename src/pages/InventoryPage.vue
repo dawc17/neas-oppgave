@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useInventoryStore } from '@/stores/inventory'
 import { useAuthStore } from '@/stores/auth'
+import client from '@/api/client'
 import ItemTable from '@/components/ItemTable.vue'
 import ItemForm from '@/components/ItemForm.vue'
 
@@ -25,6 +26,11 @@ const saleStage = ref('select')
 const receipt = ref(null)
 const saleError = ref('')
 const inventoryItems = computed(() => (Array.isArray(store.items) ? store.items : []))
+const isManagingUsers = ref(false)
+const users = ref([])
+const usersLoading = ref(false)
+const usersError = ref('')
+const savingUserId = ref(null)
 
 function handlePointerMove(event) {
   if (!pageEl.value) return
@@ -73,6 +79,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointermove', handlePointerMove)
   window.removeEventListener('pointerleave', handlePointerLeave)
   if (rafId) cancelAnimationFrame(rafId)
+  document.body.style.overflow = ''
 })
 
 function logout() {
@@ -97,6 +104,53 @@ function closeSale() {
   receipt.value = null
   saleError.value = ''
   document.body.style.overflow = ''
+}
+
+async function fetchUsers() {
+  usersLoading.value = true
+  usersError.value = ''
+  try {
+    const response = await client.get('/users')
+    users.value = Array.isArray(response.data) ? response.data : []
+  } catch (error) {
+    const detail = error?.response?.data?.detail
+    usersError.value = typeof detail === 'string' ? detail : 'Kunne ikke laste brukere.'
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+async function openUserManager() {
+  isManagingUsers.value = true
+  document.body.style.overflow = 'hidden'
+  await fetchUsers()
+}
+
+function closeUserManager() {
+  isManagingUsers.value = false
+  users.value = []
+  usersError.value = ''
+  usersLoading.value = false
+  savingUserId.value = null
+  document.body.style.overflow = ''
+}
+
+async function saveUserRole(user) {
+  savingUserId.value = user.id
+  usersError.value = ''
+  try {
+    const response = await client.put('/users', {
+      id: user.id,
+      role: user.role,
+    })
+    const updated = response.data
+    users.value = users.value.map((entry) => (entry.id === updated.id ? updated : entry))
+  } catch (error) {
+    const detail = error?.response?.data?.detail
+    usersError.value = typeof detail === 'string' ? detail : 'Kunne ikke oppdatere rollen.'
+  } finally {
+    savingUserId.value = null
+  }
 }
 
 function generateReceipt() {
@@ -315,6 +369,14 @@ async function downloadReceiptPng() {
               <button type="button" class="neas-button neas-reveal neas-delay-2" @click="openSale">
                 Ny salg
               </button>
+              <button
+                v-if="isAdmin"
+                type="button"
+                class="neas-outline neas-reveal neas-delay-3 text-white"
+                @click="openUserManager"
+              >
+                Administrer brukere
+              </button>
             </div>
           </div>
           <div class="relative z-10 mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -484,6 +546,77 @@ async function downloadReceiptPng() {
               <button class="neas-outline" @click="downloadReceiptPng">Last ned kvittering</button>
               <button class="neas-outline" @click="confirmSale">Bekreft salg</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="isManagingUsers"
+        class="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-6 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="users-modal-title"
+      >
+        <div class="w-full max-w-[920px] rounded-2xl bg-neas-white p-6 shadow-2xl">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.18em] text-neas-pine/55">Admin</p>
+              <h3 id="users-modal-title" class="mt-2 text-xl font-medium text-neas-pine">
+                Administrer brukere
+              </h3>
+            </div>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neas-pine/15 text-neas-pine"
+              @click="closeUserManager"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div v-if="usersError" class="mt-4 rounded-xl bg-neas-petal/35 px-4 py-3 text-sm text-neas-pine">
+            {{ usersError }}
+          </div>
+
+          <div v-if="usersLoading" class="mt-6 text-sm text-neas-pine/70">Laster brukere...</div>
+
+          <div v-else class="mt-6 overflow-auto">
+            <table class="w-full min-w-[700px] text-left">
+              <thead>
+                <tr class="border-b border-neas-mist text-xs uppercase tracking-[0.12em] text-neas-pine/60">
+                  <th class="px-4 py-3">Navn</th>
+                  <th class="px-4 py-3">Brukernavn</th>
+                  <th class="px-4 py-3">E-post</th>
+                  <th class="px-4 py-3">Rolle</th>
+                  <th class="px-4 py-3 text-right">Handling</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in users" :key="user.id" class="border-b border-neas-mist/80">
+                  <td class="px-4 py-4 text-sm text-neas-pine">{{ user.name }}</td>
+                  <td class="px-4 py-4 text-sm text-neas-pine">{{ user.username }}</td>
+                  <td class="px-4 py-4 text-sm text-neas-pine">{{ user.email }}</td>
+                  <td class="px-4 py-4">
+                    <select v-model="user.role" class="neas-input w-40 px-3 py-2 text-sm">
+                      <option value="guest">guest</option>
+                      <option value="employee">employee</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </td>
+                  <td class="px-4 py-4 text-right">
+                    <button
+                      type="button"
+                      class="neas-outline"
+                      :disabled="savingUserId === user.id"
+                      @click="saveUserRole(user)"
+                    >
+                      {{ savingUserId === user.id ? 'Lagrer...' : 'Lagre rolle' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
