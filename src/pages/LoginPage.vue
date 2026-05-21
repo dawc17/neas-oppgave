@@ -62,10 +62,10 @@ onBeforeUnmount(() => {
 <template>
   <div ref="pageEl" class="neas-page neas-grid relative min-h-screen flex flex-col lg:flex-row">
     <div
-      class="neas-hero neas-hero-animate relative flex min-h-[45vh] flex-1 flex-col justify-end gap-6 rounded-l-none rounded-r-[24px] p-[3.85vw] pb-14 pt-16 text-neas-white lg:min-h-screen lg:justify-between lg:pb-[3.85vw]"
+      class="neas-hero neas-hero-animate relative flex min-h-[45vh] flex-1 flex-col justify-between gap-6 rounded-l-none rounded-r-[24px] p-[3.85vw] pb-14 pt-16 text-neas-white lg:min-h-screen lg:pb-[3.85vw]"
     >
       <div
-        class="neas-float pointer-events-none absolute right-[6%] top-[8%] w-[min(42vw,260px)] select-none opacity-[0.22]"
+        class="neas-float pointer-events-none absolute right-[6%] top-[8%] w-[min(42vw,400px)] select-none opacity-[0.16]"
       >
         <img
           :src="symbolMoss"
@@ -75,7 +75,8 @@ onBeforeUnmount(() => {
           height="260"
         />
       </div>
-      <div class="relative max-w-md">
+
+      <div class="relative z-10 w-full mb-auto pb-4 lg:mb-0 lg:pb-0">
         <img
           :src="logotypeWhite"
           alt="Neas"
@@ -83,29 +84,27 @@ onBeforeUnmount(() => {
           width="220"
           height="36"
         />
+      </div>
+
+      <div class="relative max-w-md lg:mb-[6vh]">
         <h1
-          class="neas-reveal neas-delay-2 mt-10 text-[clamp(2.35rem,5vw,3.9rem)] font-medium leading-[1.04] tracking-[-0.02em] text-neas-white"
+          class="neas-reveal neas-delay-2 text-[clamp(2.35rem,5vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.02em] text-neas-white"
         >
           Oversikt som gjør beslutninger
           <span class="text-neas-sun">enklere.</span>
         </h1>
         <p
-          class="neas-reveal neas-delay-3 mt-4 max-w-sm text-[clamp(0.95rem,1.6vw,1.2rem)] font-normal leading-relaxed text-white/85"
+          class="neas-reveal neas-delay-3 mt-6 max-w-[340px] text-[clamp(0.95rem,1.6vw,1.1rem)] font-normal leading-relaxed text-white/85"
         >
           Logg inn og se lageret ditt i sanntid, med klare tall og tydelige prioriteringer.
         </p>
       </div>
-      <div
-        class="neas-reveal neas-delay-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-white/60"
-      >
-        <span>Stabil drift</span>
-        <span class="h-1 w-1 rounded-full bg-white/30"></span>
-        <span>Lokalt forankret</span>
-      </div>
     </div>
 
     <div class="flex flex-1 items-center justify-center p-[3.85vw] py-12 lg:py-[3.85vw]">
-      <div class="neas-panel neas-reveal neas-delay-2 w-full max-w-[440px] p-8 lg:p-10">
+      <div
+        class="neas-panel neas-glass-strong neas-reveal neas-delay-2 w-full max-w-[440px] p-8 lg:p-10"
+      >
         <h2
           class="text-2xl font-medium leading-none tracking-[-0.02em] text-neas-pine dark:text-[#e8f0ec]"
         >
