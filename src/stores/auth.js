@@ -30,6 +30,11 @@ export const useAuthStore = defineStore('auth', {
       this.token = response.data.token
       localStorage.setItem('jwtToken', this.token)
     },
+    async register(payload) {
+      const response = await client.post('/auth/register', payload)
+      this.token = response.data.token
+      localStorage.setItem('jwtToken', this.token)
+    },
     logout() {
       this.token = null
       localStorage.removeItem('jwtToken')

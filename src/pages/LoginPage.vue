@@ -9,6 +9,10 @@ const authStore = useAuthStore()
 const username = ref('')
 const password = ref('')
 const error = ref('')
+const isRegistering = ref(false)
+const name = ref('')
+const email = ref('')
+const confirmPassword = ref('')
 
 async function handleLogin() {
   error.value = ''
@@ -18,6 +22,39 @@ async function handleLogin() {
   } catch {
     error.value = 'Invalid username or password'
   }
+}
+
+async function handleRegister() {
+  error.value = ''
+  if (!name.value.trim() || !email.value.trim() || !username.value.trim() || !password.value) {
+    error.value = 'Fill in all registration fields'
+    return
+  }
+  if (password.value !== confirmPassword.value) {
+    error.value = 'Passwords do not match'
+    return
+  }
+
+  try {
+    await authStore.register({
+      username: username.value,
+      email: email.value,
+      name: name.value,
+      password: password.value,
+    })
+    router.push('/inventory')
+  } catch {
+    error.value = 'Could not register user'
+  }
+}
+
+function toggleMode() {
+  isRegistering.value = !isRegistering.value
+  error.value = ''
+  password.value = ''
+  confirmPassword.value = ''
+  name.value = ''
+  email.value = ''
 }
 
 const symbolMoss = '/neas-symbols/Neas%20Symbol%20Moss%20Green.svg'
@@ -113,7 +150,11 @@ onBeforeUnmount(() => {
         <p
           class="mt-2 text-sm font-normal leading-relaxed text-neas-pine/70 dark:text-[#e8f0ec]/65"
         >
-          Skriv inn brukernavn og passord for å fortsette.
+          {{
+            isRegistering
+              ? 'Opprett en ny konto. Nye brukere blir admin automatisk.'
+              : 'Skriv inn brukernavn og passord for å fortsette.'
+          }}
         </p>
 
         <div
@@ -124,7 +165,42 @@ onBeforeUnmount(() => {
           {{ error }}
         </div>
 
-        <form class="mt-8 space-y-5" @submit.prevent="handleLogin">
+        <form
+          class="mt-8 space-y-5"
+          @submit.prevent="isRegistering ? handleRegister() : handleLogin()"
+        >
+          <div v-if="isRegistering">
+            <label
+              for="login-name"
+              class="mb-2 block text-xs font-medium uppercase tracking-[0.08em] text-neas-pine/80 dark:text-[#e8f0ec]/70"
+            >
+              Navn
+            </label>
+            <input
+              id="login-name"
+              v-model="name"
+              type="text"
+              autocomplete="name"
+              class="neas-input box-border w-full px-4 py-3 text-base font-normal leading-none text-neas-pine placeholder:text-neas-pine/35"
+              placeholder=""
+            />
+          </div>
+          <div v-if="isRegistering">
+            <label
+              for="login-email"
+              class="mb-2 block text-xs font-medium uppercase tracking-[0.08em] text-neas-pine/80 dark:text-[#e8f0ec]/70"
+            >
+              E-post
+            </label>
+            <input
+              id="login-email"
+              v-model="email"
+              type="email"
+              autocomplete="email"
+              class="neas-input box-border w-full px-4 py-3 text-base font-normal leading-none text-neas-pine placeholder:text-neas-pine/35"
+              placeholder=""
+            />
+          </div>
           <div>
             <label
               for="login-user"
@@ -157,8 +233,27 @@ onBeforeUnmount(() => {
               placeholder=""
             />
           </div>
+          <div v-if="isRegistering">
+            <label
+              for="login-pass-confirm"
+              class="mb-2 block text-xs font-medium uppercase tracking-[0.08em] text-neas-pine/80 dark:text-[#e8f0ec]/70"
+            >
+              Bekreft passord
+            </label>
+            <input
+              id="login-pass-confirm"
+              v-model="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              class="neas-input box-border w-full px-4 py-3 text-base font-normal leading-none text-neas-pine placeholder:text-neas-pine/35"
+              placeholder=""
+            />
+          </div>
           <button type="submit" class="neas-button-dark rounded-[13px] w-full py-3.5 text-sm">
-            Logg inn
+            {{ isRegistering ? 'Registrer og logg inn' : 'Logg inn' }}
+          </button>
+          <button type="button" class="neas-outline w-full text-neas-pine" @click="toggleMode">
+            {{ isRegistering ? 'Tilbake til innlogging' : 'Opprett konto' }}
           </button>
         </form>
       </div>

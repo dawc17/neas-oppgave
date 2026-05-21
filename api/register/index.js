@@ -13,7 +13,7 @@ module.exports = async function (context, req) {
       .input("email", sql.NVarChar, email)
       .input("name", sql.NVarChar, name)
       .input("password", sql.NVarChar, hashedPassword)
-      .query("INSERT INTO users (username, email, name, password) OUTPUT INSERTED.* VALUES (@username, @email, @name, @password)")
+      .query("INSERT INTO users (username, email, name, password, role) OUTPUT INSERTED.* VALUES (@username, @email, @name, @password, 'admin')")
 
     const user = result.recordset[0]
     const token = jwt.sign(
