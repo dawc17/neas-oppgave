@@ -575,7 +575,10 @@ async function downloadReceiptPng() {
             </button>
           </div>
 
-          <div v-if="usersError" class="mt-4 rounded-xl bg-neas-petal/35 px-4 py-3 text-sm text-neas-pine">
+          <div
+            v-if="usersError"
+            class="mt-4 rounded-xl bg-neas-petal/35 px-4 py-3 text-sm text-neas-pine"
+          >
             {{ usersError }}
           </div>
 
@@ -584,7 +587,9 @@ async function downloadReceiptPng() {
           <div v-else class="mt-6 overflow-auto">
             <table class="w-full min-w-[700px] text-left">
               <thead>
-                <tr class="border-b border-neas-mist text-xs uppercase tracking-[0.12em] text-neas-pine/60">
+                <tr
+                  class="border-b border-neas-mist text-xs uppercase tracking-[0.12em] text-neas-pine/60"
+                >
                   <th class="px-4 py-3">Navn</th>
                   <th class="px-4 py-3">Brukernavn</th>
                   <th class="px-4 py-3">E-post</th>
